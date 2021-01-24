@@ -1,0 +1,43 @@
+How to get Pi-Hole up and running in a container under Ubuntu 18.04 with Docker.
+
+This could work just as easy without the network steps on other Linux distro's
+
+If you have Ubuntu 17 or higher then you'll need to disable dnsmasq using the following  commands.
+
+Disable and stop the service 
+sudo systemctl disable systemd-resolved.service
+sudo systemctl stop systemd-resolved
+
+Then put the following line in the [main] section of your
+/etc/NetworkManager/NetworkManager.conf
+dns=default
+
+Delete the symlink /etc/resolv.conf
+rm /etc/resolv.conf
+
+Restart network-manager
+sudo service network-manager restart
+
+once that's done you should be able to run the pihole docker image without issues.  The following commands worked OK for me but you can find full list of option on https://hub.docker.com/r/pihole/pihole
+
+sudo docker pull pihole/pihole
+
+sudo docker run -d \
+    --name pihole \
+    -p 53:53/tcp -p 53:53/udp \
+    -p 67:67/udp \
+    -p 80:80 \
+    -p 443:443 \
+    -v "${DOCKER_CONFIGS}/pihole/:/etc/pihole/" \
+    -v "${DOCKER_CONFIGS}/dnsmasq.d/:/etc/dnsmasq.d/" \
+    -e ServerIP="${IP}" \
+    -e ServerIPv6="${IPv6}" \
+    --restart=unless-stopped \
+    --cap-add=NET_ADMIN \
+    --dns=127.0.0.1 --dns=1.1.1.1 \
+    pihole/pihole:latest
+
+echo -n "Your password for https://${IP}/admin/ is "
+docker logs pihole 2** /dev/null | grep 'password'
+
+**Angled brackets aren't allowed in comments
