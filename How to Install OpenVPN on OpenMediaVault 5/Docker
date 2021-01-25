@@ -1,0 +1,40 @@
+In this post, we’ll look at How to Install OpenVPN on OpenMediaVault 5 / Docker
+
+OpenVPN provides flexible VPN solutions to secure your data communications, whether it’s for Internet privacy, remote access to your home network, or whatever your secure connection needs may be. OpenVPN Server software solution can be deployed in just a few minutes using your own domain name, Docker, and an SSH client.
+
+Full credit for this tutorial goes to kylemanna/openvpn.
+
+In order to follow along, you’ll need to have a subdomain setup with either DuckDNS or have a domain/subdomain that you own setup and pointed to your home’s IP address. This will NOT be your server’s IP address. This is your HOME’s IP address.
+
+You’ll also have to install the OpenVPN Connect app on your phone or other device.
+
+Installing OpenVPN
+Here are the commands that you’ll need to enter in order to make this work.
+
+OVPN_DATA="ovpn-data-openvpn"
+
+docker volume create --name $OVPN_DATA
+
+docker run -v $OVPN_DATA:/etc/openvpn --log-driver=none --rm kylemanna/openvpn ovpn_genconfig -u udp://VPN.SERVERNAME.COM
+
+docker run -v $OVPN_DATA:/etc/openvpn --log-driver=none --rm -it kylemanna/openvpn ovpn_initpki
+
+docker run -v $OVPN_DATA:/etc/openvpn -d -p 1194:1194/udp --cap-add=NET_ADMIN kylemanna/openvpn
+
+docker run -v $OVPN_DATA:/etc/openvpn --log-driver=none --rm -it kylemanna/openvpn easyrsa build-client-full CLIENTNAME nopass
+
+docker run -v $OVPN_DATA:/etc/openvpn --log-driver=none --rm kylemanna/openvpn ovpn_getclient CLIENTNAME > CLIENTNAME.ovpn
+You’ll enter these commands one at a time and follow the prompts provided after each. Not all will have a prompt, but some will.
+
+During this process, you’ll be asked to enter a password. You’ll actually be asked to enter this password a few different times. Be sure to use the same password each time and make sure that it is a secure password. The more secure the better. You won’t need to use/remember this password after you have your OpenVPN container setup.
+
+Be sure to change VPN.SERVERNAME.COM to whatever URL you want your domain name to be set to.
+
+Setting Up Your Phone
+Once you’ve got the client certificate generated, use a program like Filezilla to login to your server as root on port 22 to download the CLIENTNAME.ovpn file and transfer it to your phone.
+
+Next, open the OpenVPN Connect app. Click the orange + icon and click the “File” tab. Navigate to where you put the file on your phone and import the file. You should now be able to connect to your home network from anywhere your phone has an internet connection.
+
+Please note that connecting to your home network via OpenVPN while your WiFi is connected to your home WiFi won’t do anything other than slow your connected device’s connection. Only use this when you are NOT connected to your home network, but need to be.
+
+https://dbtechreviews.com/2020/04/how-to-install-openvpn-on-openmediavault-5-docker/
