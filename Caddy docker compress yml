@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  my-app:
+    image: my-app
+    expose:
+      - 3000
+
+  caddy:
+    image: caddy:2
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - reverse_proxy_from=my-app:3000
+      - reverse_proxy_to=my-domain.com
+    volumes:
+      - caddy:/data
+
+
+volumes:
+  caddy:
+
+
+
+
+
+
+Credit 
+https://stackoverflow.com/questions/61818066/how-to-configure-caddy-2-in-docker-compose-file-to-do-reverse-proxy-without-a-bi
